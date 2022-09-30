@@ -40,7 +40,11 @@ def handler(event, context):
 
         for db in dbName:
             if db == snapshotDbName:
-                exportTaskId = (sourceId.replace("rds:","") + messageId)[:60]
+                matchSnapshotRegEx = "^rds:" + db + "-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}$"
+                if re.match(matchSnapshotRegEx, sourceId):
+                    exportTaskId = ((sourceId[4:] + '-').replace("--", "-") + messageId)[:60]
+                    if exportTaskId[59] == "-":
+                        exportTaskId = exportTaskId[:59]
                 response = boto3.client("rds").start_export_task(
                     ExportTaskIdentifier=exportTaskId,
                     SourceArn=sourceArn,
